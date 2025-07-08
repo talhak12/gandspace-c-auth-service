@@ -1,7 +1,14 @@
+import app from './app';
 import { Config } from './config';
 
-function welcome(name: string) {
-  console.log(Config.PORT);
-}
+const startServer = () => {
+  const PORT = Config.PORT;
+  try {
+    app.listen(PORT, () => console.log(`Listening on PORT ${PORT}`));
+  } catch (err) {
+    console.error(err);
+    process.exit(1);
+  }
+};
 
-welcome('rehmat');
+startServer();
