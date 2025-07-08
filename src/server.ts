@@ -1,5 +1,7 @@
+import { Config } from './config';
+
 function welcome(name: string) {
-  console.log(`welcome ${name}`);
+  console.log(Config.PORT);
 }
 
 welcome('rehmat');
