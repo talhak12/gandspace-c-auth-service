@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from 'express';
+import express, { Request, Response, NextFunction, json } from 'express';
 import logger from './config/logger';
 import { HttpError } from 'http-errors';
 import authRouter from './routes/auth';
@@ -16,6 +16,9 @@ app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
   logger.info(err.message);
   // You can customize statusCode extraction if you have custom error types
   const statusCode = err.statusCode || 500;
+
+  //res.setHeader('Content-Type', 'application/json');
+
   res.status(statusCode).json({
     errors: [
       {

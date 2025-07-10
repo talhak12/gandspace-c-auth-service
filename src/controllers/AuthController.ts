@@ -2,6 +2,6 @@ import { Request, Response } from 'express';
 
 export class AuthController {
   register(req: Request, res: Response) {
-    res.status(201).send('welcome to auth service');
+    res.status(201).json('welcome to auth service');
   }
 }
