@@ -15,7 +15,8 @@ describe('POST /auth/register', () => {
 
   beforeEach(async () => {
     // Replace with your actual DataSource initialization logic
-    await truncateTables(connection);
+    await connection.dropDatabase();
+    await connection.synchronize();
   });
 
   afterAll(async () => {
@@ -86,11 +87,28 @@ describe('POST /auth/register', () => {
       //act
       const response = await request(app).post('/auth/register').send(userData);
 
-      console.log(response.body);
       //assert
       const userRepository = connection.getRepository(User);
       const users = await userRepository.find();
       expect(response.body?.user?.id).toBeGreaterThan(0);
+    });
+
+    it('should assign a user with specific customer role', async () => {
+      //arrange
+      const userData = {
+        firstName: 'z',
+        lastName: 'z',
+        email: 'z',
+        password: 'z',
+      };
+      //act
+      const response = await request(app).post('/auth/register').send(userData);
+
+      console.log(response.body.user);
+      //assert
+
+      expect(response.body.user).toHaveProperty('role');
+      expect(response.body.user.role).toBe('customer');
     });
   });
   describe('Fields are missing', () => {});
