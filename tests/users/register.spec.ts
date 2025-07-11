@@ -74,6 +74,24 @@ describe('POST /auth/register', () => {
       expect(users[0].lastName).toBe(userData.lastName);
       expect(users[0].email).toBe(userData.email);
     });
+
+    it('should return user id', async () => {
+      //arrange
+      const userData = {
+        firstName: 'z',
+        lastName: 'z',
+        email: 'z',
+        password: 'z',
+      };
+      //act
+      const response = await request(app).post('/auth/register').send(userData);
+
+      console.log(response.body);
+      //assert
+      const userRepository = connection.getRepository(User);
+      const users = await userRepository.find();
+      expect(response.body?.user?.id).toBeGreaterThan(0);
+    });
   });
   describe('Fields are missing', () => {});
 });
