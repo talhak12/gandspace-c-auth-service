@@ -4,6 +4,7 @@ import { HttpError } from 'http-errors';
 import authRouter from './routes/auth';
 
 const app = express();
+app.use(express.json());
 
 app.get('/', (req, res, next) => {
   //const err = createHttpError(401, 'You cannot access this route');
