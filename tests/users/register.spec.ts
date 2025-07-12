@@ -4,6 +4,7 @@ import { DataSource } from 'typeorm';
 import { AppDataSource } from '../../src/config/data-source';
 import { truncateTables } from './utils';
 import { User } from '../../src/entity/User';
+import { Roles } from '../../src/constants';
 
 describe('POST /auth/register', () => {
   let connection: DataSource;
@@ -109,6 +110,26 @@ describe('POST /auth/register', () => {
 
       expect(response.body.user).toHaveProperty('role');
       expect(response.body.user.role).toBe('customer');
+    });
+
+    it('should return 400 status code if email already exists', async () => {
+      //arrange
+      const userData = {
+        firstName: 'z',
+        lastName: 'z',
+        email: 'z',
+        password: 'z',
+      };
+      //act
+      const userRepository = connection.getRepository(User);
+      await userRepository.save({ ...userData, role: Roles.Customer });
+
+      const response = await request(app).post('/auth/register').send(userData);
+
+      expect(response.statusCode).toBe(400);
+      //assert
+      //console.log(response.body.user.password);
+      //expect(response.body.user.password).not.toBe(userData.password);
     });
   });
   describe('Fields are missing', () => {});
