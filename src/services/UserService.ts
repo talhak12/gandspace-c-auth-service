@@ -24,9 +24,7 @@ export class UserService {
 
     try {
       //const userRepository = AppDataSource.getRepository(User);
-      console.log(email);
 
-      console.log('s');
       return await this.userRepository.save({
         firstName,
         lastName,

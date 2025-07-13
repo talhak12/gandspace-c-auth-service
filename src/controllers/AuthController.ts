@@ -2,12 +2,21 @@ import { NextFunction, Request, Response } from 'express';
 
 import { RegisterUserRequest } from '../types';
 import { UserService } from '../services/UserService';
-import { Logger } from 'winston'; // Update the path as needed
+import { error, Logger } from 'winston'; // Update the path as needed
+import createHttpError from 'http-errors';
+const { validationResult } = require('express-validator');
 
 export class AuthController {
   constructor(private userService: UserService, private logger: Logger) {}
 
   async register(req: RegisterUserRequest, res: Response, next: NextFunction) {
+    const result = validationResult(req);
+
+    console.log(result);
+    if (result.errors.length > 0) {
+      return res.status(400).json({ errors: result.errors });
+    }
+
     const { firstName, lastName, email, password } = req.body;
 
     let user;
