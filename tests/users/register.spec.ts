@@ -2,7 +2,7 @@ import request from 'supertest';
 import app from '../../src/app';
 import { DataSource } from 'typeorm';
 import { AppDataSource } from '../../src/config/data-source';
-import { truncateTables } from './utils';
+import { isJwt, truncateTables } from './utils';
 import { User } from '../../src/entity/User';
 import { Roles } from '../../src/constants';
 
@@ -31,7 +31,7 @@ describe('POST /auth/register', () => {
       const userData = {
         firstName: 'z',
         lastName: 'z',
-        email: 'z',
+        email: 'a@a.com',
         password: 'z',
       };
       //act
@@ -45,7 +45,7 @@ describe('POST /auth/register', () => {
       const userData = {
         firstName: 'z',
         lastName: 'z',
-        email: 'z',
+        email: 'a@a.com',
         password: 'z',
       };
       //act
@@ -61,7 +61,7 @@ describe('POST /auth/register', () => {
       const userData = {
         firstName: 'z',
         lastName: 'z',
-        email: 'z',
+        email: 'a@a.com',
         password: 'z',
       };
       //act
@@ -82,7 +82,7 @@ describe('POST /auth/register', () => {
       const userData = {
         firstName: 'z',
         lastName: 'z',
-        email: 'z',
+        email: 'a@a.com',
         password: 'z',
       };
       //act
@@ -99,13 +99,13 @@ describe('POST /auth/register', () => {
       const userData = {
         firstName: 'z',
         lastName: 'z',
-        email: 'z',
+        email: 'a@a.com',
         password: 'z',
       };
       //act
       const response = await request(app).post('/auth/register').send(userData);
 
-      console.log(response.body.user);
+      //console.log(response.body.user);
       //assert
 
       expect(response.body.user).toHaveProperty('role');
@@ -117,7 +117,7 @@ describe('POST /auth/register', () => {
       const userData = {
         firstName: 'z',
         lastName: 'z',
-        email: 'z',
+        email: 'a@a.com',
         password: 'z',
       };
       //act
@@ -131,12 +131,80 @@ describe('POST /auth/register', () => {
       //console.log(response.body.user.password);
       //expect(response.body.user.password).not.toBe(userData.password);
     });
-  });
-  describe('Fields are missing', () => {
-    it.skip('should return 400 status code if email field missing', async () => {
+
+    it('should return the access token and refresh token inside a cookie', async () => {
       //arrange
       const userData = {
         firstName: 'z',
+        lastName: 'z',
+        email: 'a@a.com',
+        password: 'z',
+      };
+      //act
+      //const userRepository = connection.getRepository(User);
+      //await userRepository.save({ ...userData, role: Roles.Customer });
+
+      const response = await request(app).post('/auth/register').send(userData);
+
+      let accessToken = '';
+      let refreshToken = '';
+
+      if (response.headers['set-cookie'].length > 0) {
+        accessToken = response.headers['set-cookie'][0]
+          .split('=')[1]
+          .split(';')[0];
+        refreshToken = response.headers['set-cookie'][1]
+          .split('=')[1]
+          .split(';')[0];
+      }
+
+      console.log('accessToken', accessToken);
+      console.log('refreshToken', refreshToken);
+
+      expect(accessToken).not.toBe('');
+      expect(refreshToken).not.toBe('');
+
+      expect(isJwt(accessToken)).toBeTruthy();
+      expect(isJwt(refreshToken)).toBeTruthy();
+
+      //const cookies = response.headers['set-cookie'] || [];
+      /*console.log(
+        response.headers['set-cookie'][0].split(';')[0].split('=')[0]
+      );*/
+      /*const accessTokenCookie = cookies((cookie: string) =>
+        cookie.startsWith('accessToken=')
+      );*/
+      //console.log('d', accessTokenCookie);
+
+      //console.log('d', (cookies[0].accessToken ));
+    });
+  });
+  describe('Fields are missing', () => {
+    it('should return 400 status code if email field missing', async () => {
+      //arrange
+      const userData = {
+        firstName: 'z',
+        lastName: 'z',
+        email: '',
+        password: 'z',
+      };
+      //act
+
+      const response = await request(app).post('/auth/register').send(userData);
+      //console.log(response);
+      expect(response.statusCode).toBe(400);
+
+      const userRepository = connection.getRepository(User);
+      expect((await userRepository.find()).length).toBe(0);
+      //assert
+      //console.log(response.body.user.password);
+      //expect(response.body.user.password).not.toBe(userData.password);
+    });
+
+    it('should return 400 status code if firstName field missing', async () => {
+      //arrange
+      const userData = {
+        firstName: '',
         lastName: 'z',
         email: 'a@a.com',
         password: 'z',
@@ -149,6 +217,46 @@ describe('POST /auth/register', () => {
 
       const userRepository = connection.getRepository(User);
       expect((await userRepository.find()).length).toBe(0);
+      //assert
+      //console.log(response.body.user.password);
+      //expect(response.body.user.password).not.toBe(userData.password);
+    });
+
+    it('should return 400 status code if lastName field missing', async () => {
+      //arrange
+      const userData = {
+        firstName: 'c',
+        lastName: '',
+        email: 'a@a.com',
+        password: 'z',
+      };
+      //act
+
+      const response = await request(app).post('/auth/register').send(userData);
+
+      expect(response.statusCode).toBe(400);
+
+      const userRepository = connection.getRepository(User);
+      expect((await userRepository.find()).length).toBe(0);
+      //assert
+      //console.log(response.body.user.password);
+      //expect(response.body.user.password).not.toBe(userData.password);
+    });
+
+    it('should return 400 status code if password field is less than 8 character', async () => {
+      //arrange
+      const userData = {
+        firstName: 'c',
+        lastName: 'c',
+        email: 'a@a.com',
+        password: '',
+      };
+      //act
+
+      const response = await request(app).post('/auth/register').send(userData);
+
+      expect(response.statusCode).toBe(400);
+
       //assert
       //console.log(response.body.user.password);
       //expect(response.body.user.password).not.toBe(userData.password);
@@ -174,6 +282,24 @@ describe('POST /auth/register', () => {
       //console.log(users[0].email);
       console.log(userData.email);
       expect(users[0].email).toBe('a@a.com');
+      //assert
+      //console.log(response.body.user.password);
+      //expect(response.body.user.password).not.toBe(userData.password);
+    });
+
+    it('should return the email status code if email is not valid', async () => {
+      //arrange
+      const userData = {
+        firstName: 'z',
+        lastName: 'z',
+        email: 'a@a',
+        password: 'z',
+      };
+      //act
+
+      const response = await request(app).post('/auth/register').send(userData);
+      expect(response.statusCode).toBe(400);
+
       //assert
       //console.log(response.body.user.password);
       //expect(response.body.user.password).not.toBe(userData.password);

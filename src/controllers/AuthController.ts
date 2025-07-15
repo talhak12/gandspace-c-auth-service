@@ -1,9 +1,14 @@
-import { NextFunction, Request, Response } from 'express';
+import fs from 'fs';
 
+import { NextFunction, Request, Response } from 'express';
+import { sign, JwtPayload } from 'jsonwebtoken';
 import { RegisterUserRequest } from '../types';
 import { UserService } from '../services/UserService';
 import { error, Logger } from 'winston'; // Update the path as needed
 import createHttpError from 'http-errors';
+import { Roles } from '../constants';
+import path from 'path';
+import { Config } from '../config';
 const { validationResult } = require('express-validator');
 
 export class AuthController {
@@ -12,7 +17,6 @@ export class AuthController {
   async register(req: RegisterUserRequest, res: Response, next: NextFunction) {
     const result = validationResult(req);
 
-    console.log(result);
     if (result.errors.length > 0) {
       return res.status(400).json({ errors: result.errors });
     }
@@ -29,6 +33,47 @@ export class AuthController {
       });
 
       this.logger.info('User has been registerd', { id: user?.id });
+      let privateKey: Buffer;
+      try {
+        privateKey = fs.readFileSync(
+          path.join(__dirname, '../../certs/private.pem')
+        );
+
+        const payload: JwtPayload = {
+          sub: user.id.toString(),
+          role: user.role,
+        };
+        const accessToken = sign(payload, privateKey, {
+          algorithm: 'RS256',
+          expiresIn: '1h',
+        });
+
+        res.cookie('accessToken', accessToken, {
+          domain: 'localhost',
+          sameSite: 'strict',
+          maxAge: 1000 * 60 * 60,
+          httpOnly: true,
+        });
+
+        const refreshToken = sign(
+          payload,
+          Config.REFRESH_TOKEN_SECRET! as string,
+          {
+            algorithm: 'HS256',
+            expiresIn: '1y',
+          }
+        );
+
+        res.cookie('refreshToken', refreshToken, {
+          domain: 'localhost',
+          sameSite: 'strict',
+          maxAge: 1000 * 60 * 60 * 24 * 365,
+          httpOnly: true,
+        });
+      } catch (err) {
+        const error = createHttpError(500, 'Error while reading private key');
+        next(error);
+      }
 
       res.status(201).json({ user });
     } catch (err) {

@@ -33,7 +33,7 @@ export class UserService {
         role: Roles.Customer,
       });
     } catch (err) {
-      console.log('d');
+      //console.log('d');
       const error = createHttpError(
         500,
         'Failed to store the data in the database'
