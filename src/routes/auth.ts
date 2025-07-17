@@ -9,6 +9,7 @@ import { User } from '../entity/User';
 import logger from '../config/logger';
 import { TokenService } from '../services/TokenService';
 import { RefreshToken } from '../entity/RefreshToken';
+import loginValidator from '../validators/login-validator';
 //const { body } = require('express-validator');
 
 const { check, query, validationResult } = require('express-validator');
@@ -28,6 +29,19 @@ router.post(
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       await authController.register(req, res, next);
+    } catch (err) {
+      next(err);
+    }
+  }
+);
+
+router.post(
+  '/login',
+  loginValidator,
+
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await authController.login(req, res, next);
     } catch (err) {
       next(err);
     }
