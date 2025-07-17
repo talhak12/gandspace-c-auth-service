@@ -1,16 +1,10 @@
 import fs from 'fs';
-
 import { NextFunction, Request, Response } from 'express';
-import { sign, JwtPayload } from 'jsonwebtoken';
+import { JwtPayload } from 'jsonwebtoken';
 import { RegisterUserRequest } from '../types';
 import { UserService } from '../services/UserService';
-import { error, Logger } from 'winston'; // Update the path as needed
+import { Logger } from 'winston'; // Update the path as needed
 import createHttpError from 'http-errors';
-import { Roles } from '../constants';
-import path from 'path';
-import { Config } from '../config';
-import { AppDataSource } from '../config/data-source';
-import { RefreshToken } from '../entity/RefreshToken';
 import { TokenService } from '../services/TokenService';
 const { validationResult } = require('express-validator');
 
@@ -56,23 +50,10 @@ export class AuthController {
         });
         const MS_IN_YEAR = 1000 * 60 * 60 * 24 * 365;
 
-        const refreshTokenRepository =
-          AppDataSource.getRepository(RefreshToken);
+        const newRefreshToken = await this.tokenService.persistRefreshToken(
+          user
+        );
 
-        const newRefreshToken = await refreshTokenRepository.save({
-          user: user,
-          expiresAt: new Date(Date.now() + MS_IN_YEAR),
-        });
-
-        /* const refreshToken = sign(
-          payload,
-          Config.REFRESH_TOKEN_SECRET as string,
-          {
-            algorithm: 'HS256',
-            expiresIn: '1y',
-            jwtid: String(newRefreshToken.id),
-          }
-        );*/
         const refreshToken = this.tokenService.generateRefreshToken({
           ...payload,
           id: String(newRefreshToken.id),
