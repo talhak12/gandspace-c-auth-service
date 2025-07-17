@@ -127,7 +127,7 @@ export class AuthController {
           httpOnly: true,
         });
 
-        res.status(201).json({ user });
+        res.status(200).json({ user });
       }
     } catch (error) {
       next(error);
