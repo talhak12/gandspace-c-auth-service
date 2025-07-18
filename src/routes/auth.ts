@@ -12,7 +12,8 @@ import { RefreshToken } from '../entity/RefreshToken';
 import loginValidator from '../validators/login-validator';
 import authenticate from '../middlewares/authenticate';
 import { AuthRequest } from '../types';
-import gand from '../middlewares/gand';
+import validateRefreshToken from '../middlewares/validateRefreshToken';
+
 //const { body } = require('express-validator');
 
 const { check, query, validationResult } = require('express-validator');
@@ -58,5 +59,17 @@ router.get('/self', authenticate, async (req: Request, res: Response) => {
     //next(err);
   }
 });
+
+router.post(
+  '/refresh',
+  validateRefreshToken,
+  async (req: Request, res: Response, next: NextFunction) => {
+    try {
+      await authController.refresh(req as AuthRequest, res, next);
+    } catch (err) {
+      //next(err);
+    }
+  }
+);
 
 export default router;

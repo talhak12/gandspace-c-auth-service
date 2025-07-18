@@ -50,6 +50,14 @@ export class UserService {
     return user;
   }
 
+  async findById(id: number) {
+    const user = await this.userRepository.findOne({
+      where: { id: id },
+    });
+
+    return user;
+  }
+
   async login({ email, password }: LoginData) {
     const saltRounds = 10;
     //const hashedPassword = await bcrypt.hash(password, saltRounds);

@@ -47,4 +47,10 @@ export class TokenService {
       expiresAt: new Date(Date.now() + MS_IN_YEAR),
     });
   }
+
+  async deleteRefreshToken(id: number) {
+    return await this.u.delete({
+      id: id,
+    });
+  }
 }

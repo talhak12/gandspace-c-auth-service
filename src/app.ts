@@ -23,7 +23,7 @@ app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
 
   logger.info(err.message);
   // You can customize statusCode extraction if you have custom error types
-  const statusCode = err.statusCode || 500;
+  const statusCode = err.statusCode || err.status || 500;
 
   //res.setHeader('Content-Type', 'application/json');
 

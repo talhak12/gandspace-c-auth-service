@@ -136,7 +136,53 @@ export class AuthController {
   }
 
   async self(req: AuthRequest, res: Response) {
-    console.log('dd', req.auth);
     res.json({ c: req.auth });
+  }
+
+  async refresh(req: AuthRequest, res: Response, next: NextFunction) {
+    const payload: JwtPayload = {
+      sub: req.auth.sub,
+      role: req.auth.role,
+    };
+
+    try {
+      const accessToken = this.tokenService.generateAccessToken(payload);
+
+      const user = await this.userService.findById(Number(req.auth?.sub));
+
+      if (!user) {
+        const error = createHttpError(400, 'User not found with this token');
+        next(error);
+      }
+      res.cookie('accessToken', accessToken, {
+        domain: 'localhost',
+        sameSite: 'strict',
+        maxAge: 1000 * 60 * 60,
+        httpOnly: true,
+      });
+      const MS_IN_YEAR = 1000 * 60 * 60 * 24 * 365;
+
+      const newRefreshToken = await this.tokenService.persistRefreshToken(
+        user!
+      );
+
+      await this.tokenService.deleteRefreshToken(Number(req.auth.id));
+
+      const refreshToken = this.tokenService.generateRefreshToken({
+        ...payload,
+        id: String(newRefreshToken.id),
+      });
+
+      res.cookie('refreshToken', refreshToken, {
+        domain: 'localhost',
+        sameSite: 'strict',
+        maxAge: MS_IN_YEAR,
+        httpOnly: true,
+      });
+
+      res.json({ id: req.auth?.sub });
+    } catch (err) {
+      next(err);
+    }
   }
 }
