@@ -1,9 +1,14 @@
 import express, { Request, Response, NextFunction, json } from 'express';
+import cookieParser from 'cookie-parser';
 import logger from './config/logger';
 import { HttpError } from 'http-errors';
 import authRouter from './routes/auth';
 
 const app = express();
+
+app.use(express.static('public'));
+
+app.use(cookieParser());
 app.use(express.json());
 
 app.get('/', (req, res, next) => {
@@ -14,6 +19,8 @@ app.get('/', (req, res, next) => {
 app.use('/auth', authRouter);
 
 app.use((err: HttpError, req: Request, res: Response, next: NextFunction) => {
+  console.log(err);
+
   logger.info(err.message);
   // You can customize statusCode extraction if you have custom error types
   const statusCode = err.statusCode || 500;

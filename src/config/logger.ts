@@ -7,6 +7,11 @@ const logger = winston.createLogger({
     serviceName: 'auth-service',
   },
 
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.json()
+  ),
+
   transports: [
     new winston.transports.File({
       level: 'error',
@@ -30,10 +35,7 @@ const logger = winston.createLogger({
     }),
     new winston.transports.Console({
       level: 'info',
-      format: winston.format.combine(
-        winston.format.timestamp(),
-        winston.format.json()
-      ),
+
       //silent: Config.NODE_ENV == 'test',
     }),
   ],

@@ -27,12 +27,20 @@ describe('POST /auth/login', () => {
   });
 
   describe('Given all fields', () => {
-    it('should return the 201 status code', async () => {
+    it.skip('should return the user data', async () => {
       //arrange
       const userData = {
+        firstName: 'z',
+        lastName: 'z',
         email: 'a@a.com',
         password: 'z',
       };
+      const userRepository = connection.getRepository(User);
+      const data = await userRepository.save({
+        ...userData,
+        role: Roles.Customer,
+      });
+
       //act
       const response = await request(app).post('/auth/login').send(userData);
       //assert

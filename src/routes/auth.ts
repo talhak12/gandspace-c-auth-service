@@ -10,6 +10,9 @@ import logger from '../config/logger';
 import { TokenService } from '../services/TokenService';
 import { RefreshToken } from '../entity/RefreshToken';
 import loginValidator from '../validators/login-validator';
+import authenticate from '../middlewares/authenticate';
+import { AuthRequest } from '../types';
+import gand from '../middlewares/gand';
 //const { body } = require('express-validator');
 
 const { check, query, validationResult } = require('express-validator');
@@ -47,5 +50,13 @@ router.post(
     }
   }
 );
+
+router.get('/self', authenticate, async (req: Request, res: Response) => {
+  try {
+    await authController.self(req as AuthRequest, res);
+  } catch (err) {
+    //next(err);
+  }
+});
 
 export default router;

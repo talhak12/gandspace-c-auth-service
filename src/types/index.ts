@@ -14,3 +14,10 @@ export interface LoginData {
   email: string;
   password: string;
 }
+
+export interface AuthRequest extends Request {
+  auth: {
+    id: number;
+    role: string;
+  };
+}

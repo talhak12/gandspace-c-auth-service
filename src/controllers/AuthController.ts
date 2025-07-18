@@ -1,7 +1,7 @@
 import fs from 'fs';
 import { NextFunction, Request, Response } from 'express';
 import { JwtPayload } from 'jsonwebtoken';
-import { RegisterUserRequest } from '../types';
+import { AuthRequest, RegisterUserRequest } from '../types';
 import { UserService } from '../services/UserService';
 import { Logger } from 'winston'; // Update the path as needed
 import createHttpError from 'http-errors';
@@ -133,5 +133,10 @@ export class AuthController {
       next(error);
       return;
     }
+  }
+
+  async self(req: AuthRequest, res: Response) {
+    console.log('dd', req.auth);
+    res.json({ c: req.auth });
   }
 }
